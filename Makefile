@@ -5,8 +5,30 @@ YANG_MODELS_TAG  ?= v24.10.1
 
 # --- Development ---
 
+.PHONY: check-prereqs
+check-prereqs:    ## Check that required tools are installed
+	@missing=0; \
+	if ! command -v docker >/dev/null 2>&1; then \
+		echo "  docker not found — install from https://docs.docker.com/engine/install/"; \
+		missing=1; \
+	fi; \
+	if ! command -v containerlab >/dev/null 2>&1; then \
+		echo "  containerlab not found — install from https://containerlab.dev/install/"; \
+		missing=1; \
+	fi; \
+	if ! command -v gnmic >/dev/null 2>&1; then \
+		echo "  gnmic not found — install from https://gnmic.openconfig.net/install/"; \
+		missing=1; \
+	fi; \
+	if [ $$missing -eq 1 ]; then \
+		echo ""; \
+		echo "Install the missing tools above, then re-run make setup."; \
+		exit 1; \
+	fi; \
+	echo "All prerequisites found."
+
 .PHONY: setup
-setup: yang-models ## Set up local dev environment (install deps + YANG models)
+setup: check-prereqs yang-models ## Set up local dev environment (install deps + YANG models)
 	uv sync
 
 .PHONY: yang-models
