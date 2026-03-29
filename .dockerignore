@@ -1,0 +1,10 @@
+.git/
+.cache/
+logs/
+__pycache__/
+*.pyc
+.env
+.srl_explorer_history
+node_modules/
+docs/
+srlinux-yang-models/

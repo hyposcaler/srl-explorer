@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+dist/
+build/
+*.egg-info/
+
+# Virtual environment
+.venv/
+
+# Environment and secrets
+.env
+
+# srl-explorer runtime
+.cache/
+logs/
+.srl_explorer_history
+
+# YANG models (cloned via make setup)
+srlinux-yang-models/
+
+# IDE
+.vscode/
+.idea/
