@@ -32,14 +32,15 @@ The agent shows its reasoning (the `>>>` lines) and tool calls in real time befo
 
 - Python 3.11+
 - [uv](https://docs.astral.sh/uv/) package manager
-- [gnmic](https://gnmic.openconfig.net/) CLI installed and on PATH
+- [containerlab](https://containerlab.dev/install/) for running the lab topology
+- [gnmic](https://gnmic.openconfig.net/install/) CLI installed and on PATH
 - A running [srl-telemetry-lab](https://github.com/srl-labs/srl-telemetry-lab) environment
 - OpenAI API key
 
 ## Installation
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/hyposcaler/srl-explorer.git
 cd srl-explorer
 make setup
 ```
@@ -119,27 +120,6 @@ logs/
 ```
 
 `session_summary.json` tracks total turns, tool call counts, token usage, and errors.
-
-## Lab Topology
-
-5-node Clos fabric running on [srl-telemetry-lab](https://github.com/srl-labs/srl-telemetry-lab):
-
-| Device | Role | Management IP | ASN |
-|---|---|---|---|
-| leaf1 | Leaf (IXR-D2L) | 172.80.80.11 | 101 |
-| leaf2 | Leaf (IXR-D2L) | 172.80.80.12 | 102 |
-| leaf3 | Leaf (IXR-D2L) | 172.80.80.13 | 103 |
-| spine1 | Spine (IXR-D3L) | 172.80.80.21 | 201 |
-| spine2 | Spine (IXR-D3L) | 172.80.80.22 | 202 |
-
-**Interconnections:**
-- Each leaf connects to both spines (leaf:e1-49 to spine1, leaf:e1-50 to spine2)
-- Client servers: client1 on leaf1:e1-1, client2 on leaf2:e1-1, client3 on leaf3:e1-1
-
-**Routing:**
-- eBGP underlay (leaf ASNs 101-103, spine ASNs 201-202)
-- iBGP overlay (AS 100) with spines as route reflectors
-- EVPN/VXLan services
 
 ## Development
 
