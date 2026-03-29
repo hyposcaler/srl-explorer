@@ -34,6 +34,10 @@ lint:             ## Run linter (ruff check)
 format:           ## Format code (ruff format)
 	uv run ruff format src/
 
+.PHONY: test
+test:             ## Run tests
+	uv run pytest tests/ -v
+
 .PHONY: clean
 clean:            ## Remove caches, logs, build artifacts
 	rm -rf .cache/ logs/ dist/ build/

@@ -67,7 +67,7 @@ def _compute_hash(yang_dir: Path) -> str:
     h = hashlib.sha256()
     for f in yang_files:
         h.update(f.encode())
-        h.update(str(os.path.getsize(f)).encode())
+        h.update(str(os.path.getmtime(f)).encode())
     return h.hexdigest()[:16]
 
 
@@ -155,6 +155,9 @@ def build_or_load_yang_index(yang_dir: Path, cache_dir: Path) -> YangIndex:
     cache_file = cache_dir / f"yang_index_{content_hash}.pkl"
 
     if cache_file.exists():
+        # Never eat a pickle from someone you don't trust — pickle deserialization
+        # can execute arbitrary code. This cache is safe because we generate it
+        # ourselves from known YANG files.
         with open(cache_file, "rb") as f:
             entries = pickle.load(f)
         return YangIndex(entries)

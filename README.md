@@ -44,7 +44,7 @@ cd srl-explorer
 make setup
 ```
 
-`make setup` clones the SR Linux YANG models (if not already present) and installs Python dependencies. The YANG models version defaults to `v21.6.2` — override with `make setup YANG_MODELS_TAG=v24.10.1`.
+`make setup` clones the SR Linux YANG models (if not already present) and installs Python dependencies. The YANG models version defaults to `v24.10.1` — override with `make setup YANG_MODELS_TAG=<version>`.
 
 ## Configuration
 
@@ -152,6 +152,7 @@ Run `make` to see all available targets:
 | `make audit` | Check dependencies for known vulnerabilities (pip-audit) |
 | `make lint` | Run linter (ruff) |
 | `make format` | Format code (ruff) |
+| `make test` | Run tests (pytest) |
 | `make clean` | Remove caches, logs, build artifacts |
 | `make docker-build` | Build the Docker container |
 | `make docker-run` | Run in container (--network host, --env-file .env) |
@@ -167,6 +168,20 @@ make docker-run
 ```
 
 `docker-run` uses `--network host` so the container can reach Prometheus and lab devices. Logs are bind-mounted to `./logs/` on the host.
+
+## Testing
+
+Run the test suite:
+
+```bash
+make test
+```
+
+Tests mock the OpenAI API and verify the agent loop, tool dispatch, result truncation, iteration limits, and reasoning extraction.
+
+## Extending
+
+See [docs/adding-a-tool.md](docs/adding-a-tool.md) for a step-by-step guide on adding new tools to srl-explorer.
 
 ## Troubleshooting
 

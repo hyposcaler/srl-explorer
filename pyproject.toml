@@ -16,7 +16,7 @@ dependencies = [
 srl-explorer = "srl_explorer.cli:main"
 
 [dependency-groups]
-dev = ["ruff", "pip-audit"]
+dev = ["ruff", "pip-audit", "pytest", "pytest-asyncio"]
 
 [build-system]
 requires = ["hatchling"]

@@ -16,6 +16,9 @@ from srl_explorer.tools.prometheus import prometheus_query, prometheus_query_ran
 from srl_explorer.tools.yang import YangIndex
 
 MAX_TOOL_RESULT_SIZE = 30_000
+# Safety guard: cap the agent loop to prevent runaway API costs.
+# With GPT-4o pricing, an unbounded loop can get expensive fast.
+MAX_AGENT_ITERATIONS = 25
 
 
 class Agent:
@@ -49,9 +52,11 @@ class Agent:
             self.logger.log_user_message(user_message)
 
         self.messages.append({"role": "user", "content": user_message})
+        # Reasoning is only extracted from the first LLM response in a turn —
+        # that's where the planning happens; subsequent responses are execution.
         is_first_response = True
 
-        while True:
+        for _iteration in range(MAX_AGENT_ITERATIONS):
             response = await self.client.chat.completions.create(
                 model=self.model,
                 messages=self.messages,
@@ -82,7 +87,8 @@ class Agent:
                     ).strip() or None
                 is_first_response = False
 
-            # Serialize assistant message into history
+            # OpenAI response objects aren't JSON-serializable, so we build
+            # a plain dict for the conversation history.
             msg_dict: dict[str, Any] = {"role": "assistant", "content": content}
             if msg.tool_calls:
                 msg_dict["tool_calls"] = [
@@ -138,6 +144,7 @@ class Agent:
                             + "\n... [truncated, result too large]"
                         )
 
+                    # Callback receives the (possibly truncated) result string
                     if self.on_tool_result:
                         self.on_tool_result(name, result_str)
 
@@ -154,6 +161,11 @@ class Agent:
             if self.logger:
                 self.logger.update_session_summary()
             return content or ""
+
+        raise RuntimeError(
+            f"Agent exceeded {MAX_AGENT_ITERATIONS} iterations without finishing. "
+            "This is a safety limit to prevent runaway API costs."
+        )
 
     async def _execute_tool(self, name: str, args: dict) -> Any:
         if name == "gnmic_get":
