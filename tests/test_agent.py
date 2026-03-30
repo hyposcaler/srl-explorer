@@ -5,6 +5,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from openai.types.chat import ChatCompletionMessageToolCall
+from openai.types.chat.chat_completion_message_tool_call import Function
+
 from srl_explorer.agent import Agent, MAX_AGENT_ITERATIONS, MAX_TOOL_RESULT_SIZE
 from srl_explorer.config import Config
 from srl_explorer.tools.yang import YangIndex
@@ -42,11 +45,11 @@ def _mock_response(content: str | None, finish_reason: str = "stop", tool_calls=
 
 def _mock_tool_call(tool_id: str, name: str, arguments: dict):
     """Build a mock tool call object."""
-    tc = MagicMock()
-    tc.id = tool_id
-    tc.function.name = name
-    tc.function.arguments = json.dumps(arguments)
-    return tc
+    return ChatCompletionMessageToolCall(
+        id=tool_id,
+        type="function",
+        function=Function(name=name, arguments=json.dumps(arguments)),
+    )
 
 
 @pytest.mark.asyncio

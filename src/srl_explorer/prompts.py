@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from openai.types.chat import ChatCompletionToolParam
+
 SYSTEM_PROMPT = """\
 You are a network telemetry assistant for a Nokia SR Linux data center fabric.
 
@@ -110,7 +112,7 @@ Before calling any tools, reason through your approach. Consider what the user i
 - Do NOT construct Prometheus range query start/end timestamps without first calling get_current_time
 """
 
-TOOLS = [
+TOOLS: list[ChatCompletionToolParam] = [
     {
         "type": "function",
         "function": {

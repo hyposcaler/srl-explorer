@@ -7,6 +7,11 @@ from datetime import datetime, timezone
 from typing import Any, Callable
 
 from openai import AsyncOpenAI
+from openai.types.chat import (
+    ChatCompletionMessageParam,
+    ChatCompletionMessageToolCall,
+    ChatCompletionToolParam,
+)
 
 from srl_explorer.config import Config
 from srl_explorer.turn_logging import TurnLogger
@@ -39,9 +44,10 @@ class Agent:
         self.on_tool_result = on_tool_result
         self.on_reasoning = on_reasoning
         self.logger = logger
-        self.messages: list[dict[str, Any]] = [
+        self.messages: list[ChatCompletionMessageParam] = [
             {"role": "system", "content": SYSTEM_PROMPT}
         ]
+        self.tools: list[ChatCompletionToolParam] = TOOLS
 
     def clear_history(self) -> None:
         self.messages = [{"role": "system", "content": SYSTEM_PROMPT}]
@@ -60,7 +66,7 @@ class Agent:
             response = await self.client.chat.completions.create(
                 model=self.model,
                 messages=self.messages,
-                tools=TOOLS,
+                tools=self.tools,
             )
             choice = response.choices[0]
             msg = choice.message
@@ -89,8 +95,12 @@ class Agent:
 
             # OpenAI response objects aren't JSON-serializable, so we build
             # a plain dict for the conversation history.
-            msg_dict: dict[str, Any] = {"role": "assistant", "content": content}
-            if msg.tool_calls:
+            msg_dict: ChatCompletionMessageParam = {"role": "assistant", "content": content}
+            tool_calls = [
+                tc for tc in (msg.tool_calls or [])
+                if isinstance(tc, ChatCompletionMessageToolCall)
+            ]
+            if tool_calls:
                 msg_dict["tool_calls"] = [
                     {
                         "id": tc.id,
@@ -100,7 +110,7 @@ class Agent:
                             "arguments": tc.function.arguments,
                         },
                     }
-                    for tc in msg.tool_calls
+                    for tc in tool_calls
                 ]
             self.messages.append(msg_dict)
 
@@ -109,8 +119,8 @@ class Agent:
                     self.logger.update_session_summary()
                 return content or ""
 
-            if msg.tool_calls:
-                for tc in msg.tool_calls:
+            if tool_calls:
+                for tc in tool_calls:
                     name = tc.function.name
                     args = json.loads(tc.function.arguments)
 

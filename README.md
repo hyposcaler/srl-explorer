@@ -32,7 +32,7 @@ The agent shows its reasoning (the `>>>` lines) and tool calls in real time befo
 
 - a Linux enviroment, it can be made to work on OSX or WSL but the user is on thier own in that regard.
 - Python 3.11+
-- [uv](https://docs.astral.sh/uv/) package manager
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) package manager
 - [containerlab](https://containerlab.dev/install/) for running the lab topology
 - [gnmic](https://gnmic.openconfig.net/install/) CLI installed and on PATH
 - A running [srl-telemetry-lab](https://github.com/srl-labs/srl-telemetry-lab) environment
