@@ -26,7 +26,7 @@ The target environment is a 5-node Clos fabric lab: three leaves (leaf1-3) and t
 +------------------+
 |   User (REPL)    |
 |   cli.py         |
-|   prompt_toolkit  |
+|   prompt_toolkit |
 +--------+---------+
          |
          | user_message (str)
@@ -275,9 +275,9 @@ CREDENTIALS = {"username": "admin", "password": "NokiaSrl1!"}
 
 ## 9. Key Design Decisions
 
-**Shell out to gnmic** rather than using a Python gNMI library. This avoids heavy gRPC/protobuf dependencies, leverages the same CLI that network engineers already use, and means the tool's behavior is identical to what a human would get running gnmic manually.
+**Shell out to gnmic** rather than using a Python gNMI library. This avoids heavy gRPC/protobuf dependencies, leverages the same CLI that network engineers already use, and means the tool's behavior is identical to what a human would get running gnmic manually. Also demonstrates how to make a CLI tool an LLM/AI tool
 
-**pyang for YANG parsing**. pyang correctly resolves imports, augmentations, and deviations across a large set of YANG files, producing a complete resolved module tree. This is essential for SR Linux, where the YANG model is split across hundreds of files with extensive cross-module augmentation.
+**pyang for YANG parsing**. pyang correctly resolves imports, augmentations, and deviations across a large set of YANG files, producing a complete resolved module tree. This is essential for SR Linux, where the YANG model is split across hundreds of files with extensive cross-module augmentation.  Also shows how to make a library tool and AI tool.
 
 **Directory-per-turn logging**. Each turn gets its own directory with numbered JSON files. This makes logs human-inspectable with basic shell tools (ls, cat, jq), easy to diff between sessions, and avoids any database dependency.
 

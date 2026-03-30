@@ -1,6 +1,8 @@
 # srl-explorer
 
-AI-powered CLI for querying Nokia SR Linux network telemetry using natural language.
+AI-powered CLI so easy a manager could do it.  
+
+That uses AI to query Nokia SR Linux network telemetry using natural language as the primary interface.
 
 ## What it does
 
