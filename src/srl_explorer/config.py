@@ -27,6 +27,7 @@ class Config:
     yang_models_dir: Path = field(default_factory=lambda: Path("./srlinux-yang-models/srlinux-yang-models"))
     yang_cache_dir: Path = field(default_factory=lambda: Path(".cache"))
     logs_dir: Path = field(default_factory=lambda: Path("./logs"))
+    context_window: int = 128_000
 
 
 def get_config() -> Config:
@@ -41,4 +42,5 @@ def get_config() -> Config:
         yang_models_dir=Path(os.environ.get("YANG_MODELS_DIR", "./srlinux-yang-models/srlinux-yang-models")),
         yang_cache_dir=Path(os.environ.get("YANG_CACHE_DIR", ".cache")),
         logs_dir=Path(os.environ.get("SRL_EXPLORER_LOGS_DIR", "./logs")),
+        context_window=int(os.environ.get("CONTEXT_WINDOW", "128000")),
     )

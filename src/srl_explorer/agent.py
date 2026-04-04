@@ -52,6 +52,21 @@ class Agent:
     def clear_history(self) -> None:
         self.messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
+    def history_token_estimate(self) -> int:
+        # Rough estimate — 1 token is roughly 4 chars for English text.
+        # Good enough for threshold warnings without adding tiktoken as a dependency.
+        total_chars = 0
+        for msg in self.messages:
+            content = msg.get("content")
+            if content:
+                total_chars += len(content)
+            for tc in msg.get("tool_calls", []):
+                total_chars += len(tc["function"]["arguments"])
+        return total_chars // 4
+
+    def context_usage_pct(self) -> float:
+        return self.history_token_estimate() / self.config.context_window
+
     async def chat(self, user_message: str) -> str:
         if self.logger:
             self.logger.start_turn()
@@ -122,25 +137,26 @@ class Agent:
             if tool_calls:
                 for tc in tool_calls:
                     name = tc.function.name
-                    args = json.loads(tc.function.arguments)
 
-                    if self.on_tool_call:
-                        self.on_tool_call(name, args)
-
-                    if self.logger:
-                        self.logger.log_tool_call(tc.id, name, args)
-
-                    t0 = time.monotonic()
                     result = None
                     error = None
                     try:
+                        args = json.loads(tc.function.arguments)
+
+                        if self.on_tool_call:
+                            self.on_tool_call(name, args)
+
+                        if self.logger:
+                            self.logger.log_tool_call(tc.id, name, args)
+
+                        t0 = time.monotonic()
                         result = await self._execute_tool(name, args)
                         result_str = json.dumps(result, default=str)
+                        duration_ms = int((time.monotonic() - t0) * 1000)
                     except Exception as e:
                         error = str(e)
                         result_str = json.dumps({"error": error})
-
-                    duration_ms = int((time.monotonic() - t0) * 1000)
+                        duration_ms = 0
 
                     if self.logger:
                         self.logger.log_tool_result(

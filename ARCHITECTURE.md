@@ -87,7 +87,7 @@ The loop continues until the LLM produces a response with `finish_reason == "sto
 2. If this is the first LLM response in the turn, extract `<reasoning>...</reasoning>` via regex and fire the `on_reasoning` callback
 3. Serialize the assistant message (including any `tool_calls`) into conversation history
 4. If `finish_reason == "stop"`, return the text content
-5. If `tool_calls` are present, execute each one via `_execute_tool()`, append tool results to history, and loop
+5. If `tool_calls` are present, parse arguments and execute each one via `_execute_tool()`, append tool results to history, and loop. Argument parsing (`json.loads`) and tool execution are both inside the try/except block, so malformed JSON from the LLM is surfaced as a tool error message rather than crashing the turn
 
 ### Multi-Turn Tool Chaining
 
@@ -96,6 +96,10 @@ The LLM may call tools multiple times before producing a final answer. For examp
 ### Tool Result Truncation
 
 Tool results are truncated to 30KB (`MAX_TOOL_RESULT_SIZE = 30_000`) before being placed into the LLM context. The full untruncated result is preserved in the turn logs.
+
+### Context Window Tracking
+
+The agent tracks approximate token usage via `history_token_estimate()`, which sums character lengths of all message content and tool call arguments, then divides by 4 (a rough chars-per-token heuristic for English text). `context_usage_pct()` returns the ratio against the configured `context_window` size. The REPL uses these to show tiered warnings: a one-time notice at ~75% usage and a persistent warning at ~90%.
 
 ### Callbacks
 
@@ -176,7 +180,7 @@ Four OpenAI function calling tool definitions:
 
 | Tool | Required Params | Optional Params |
 |------|----------------|-----------------|
-| `gnmic_get` | `target` (enum of 5 devices), `path` | `data_type` (ALL/CONFIG/STATE/OPERATIONAL) |
+| `gnmic_get` | `target` (enum from `TOPOLOGY` keys), `path` | `data_type` (ALL/CONFIG/STATE/OPERATIONAL) |
 | `prometheus_query` | `query` (PromQL) | `time`, `start`, `end`, `step` |
 | `yang_search` | `keyword` | `module_filter`, `max_results` |
 | `get_current_time` | (none) | (none) |
@@ -251,6 +255,7 @@ All file writes are synchronous and wrapped in `try/except` with a printed warni
 | `openai_api_key` | (required) | `OPENAI_API_KEY` |
 | `openai_model` | `gpt-4o` | `OPENAI_MODEL` |
 | `prometheus_url` | `http://localhost:9090` | `PROMETHEUS_URL` |
+| `context_window` | `128000` | `CONTEXT_WINDOW` |
 | `yang_models_dir` | `./srlinux-yang-models` | `YANG_MODELS_DIR` |
 | `yang_cache_dir` | `.cache` | `YANG_CACHE_DIR` |
 | `logs_dir` | `./logs` | `SRL_EXPLORER_LOGS_DIR` |

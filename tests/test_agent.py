@@ -163,3 +163,29 @@ async def test_reasoning_extraction():
             assert "<reasoning>" not in msg["content"]
 
     assert result == "BGP is up."
+
+
+@pytest.mark.asyncio
+async def test_malformed_tool_arguments():
+    """Malformed JSON in tool arguments produces a tool error instead of crashing."""
+    bad_tc = ChatCompletionMessageToolCall(
+        id="call_bad",
+        type="function",
+        function=Function(name="gnmic_get", arguments="{bad json"),
+    )
+    tool_response = _mock_response(None, finish_reason="tool_calls", tool_calls=[bad_tc])
+    final_response = _mock_response("ok")
+
+    agent = _make_agent()
+    agent.client.chat.completions.create = AsyncMock(
+        side_effect=[tool_response, final_response]
+    )
+
+    result = await agent.chat("do something")
+
+    # A tool error message should be in the history
+    tool_msgs = [m for m in agent.messages if m.get("role") == "tool"]
+    assert len(tool_msgs) == 1
+    assert "error" in tool_msgs[0]["content"]
+
+    assert result == "ok"

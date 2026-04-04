@@ -63,11 +63,12 @@ cp .env.example .env
 | `OPENAI_API_KEY` | (required) | OpenAI API key |
 | `OPENAI_MODEL` | `gpt-4o` | OpenAI model to use |
 | `PROMETHEUS_URL` | `http://localhost:9090` | Prometheus server URL |
+| `CONTEXT_WINDOW` | `128000` | Max context window in tokens (should match your model) |
 | `YANG_MODELS_DIR` | `./srlinux-yang-models` | Path to YANG models directory |
 | `YANG_CACHE_DIR` | `.cache` | Cache directory for parsed YANG index |
 | `SRL_EXPLORER_LOGS_DIR` | `./logs` | Directory for session logs |
 
-> **Note:** `.env.example` includes only the three most commonly configured variables. `YANG_MODELS_DIR`, `YANG_CACHE_DIR`, and `SRL_EXPLORER_LOGS_DIR` have sensible defaults and only need to be set if you want to override them.
+> **Note:** `.env.example` includes only the most commonly configured variables. `YANG_MODELS_DIR`, `YANG_CACHE_DIR`, and `SRL_EXPLORER_LOGS_DIR` have sensible defaults and only need to be set if you want to override them.
 
 ## Usage
 
@@ -160,7 +161,7 @@ Run the test suite:
 make test
 ```
 
-Tests mock the OpenAI API and verify the agent loop, tool dispatch, result truncation, iteration limits, and reasoning extraction.
+Tests mock the OpenAI API and verify the agent loop, tool dispatch, result truncation, iteration limits, reasoning extraction, and malformed tool argument handling.
 
 ## Extending
 

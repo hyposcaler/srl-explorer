@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from openai.types.chat import ChatCompletionToolParam
 
+from srl_explorer.config import TOPOLOGY
+
 SYSTEM_PROMPT = """\
 You are a network telemetry assistant for a Nokia SR Linux data center fabric.
 
@@ -128,7 +130,7 @@ TOOLS: list[ChatCompletionToolParam] = [
                     "target": {
                         "type": "string",
                         "description": "Device name",
-                        "enum": ["leaf1", "leaf2", "leaf3", "spine1", "spine2"],
+                        "enum": sorted(TOPOLOGY.keys()),
                     },
                     "path": {
                         "type": "string",

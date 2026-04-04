@@ -83,6 +83,8 @@ async def _run() -> None:
         auto_suggest=AutoSuggestFromHistory(),
     )
 
+    _warned_75 = False
+
     while True:
         try:
             user_input = await session.prompt_async("srl> ")
@@ -99,6 +101,7 @@ async def _run() -> None:
             break
         elif text == "/clear":
             agent.clear_history()
+            _warned_75 = False
             console.print("[green]Conversation cleared.[/green]")
             continue
         elif text == "/help":
@@ -110,6 +113,21 @@ async def _run() -> None:
             console.print()
             console.print(Markdown(response))
             console.print()
+
+            usage = agent.context_usage_pct()
+            est = agent.history_token_estimate()
+            window = agent.config.context_window
+            if usage >= 0.90:
+                console.print(
+                    f"[yellow]Context is ~90% full (~{est:,} of {window:,} tokens est). "
+                    f"Response quality may degrade. Use /clear to reset.[/yellow]"
+                )
+            elif usage >= 0.75 and not _warned_75:
+                console.print(
+                    f"[dim]Context is ~75% full (~{est:,} of {window:,} tokens est). "
+                    f"Consider /clear if you're starting a new topic.[/dim]"
+                )
+                _warned_75 = True
         except KeyboardInterrupt:
             console.print("\n[yellow]Interrupted.[/yellow]")
         except Exception as e:
