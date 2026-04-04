@@ -34,6 +34,11 @@ Use `uv`, never `pip`. Dependencies are managed in `pyproject.toml`. Do not add 
 - This is a teaching codebase, prefer simplicy and readability over complexity
 - Try to avoid code that might trigger pylance complaints
 
+## Documentation
+- docs/assorted_prompts are to never be modified, these are just a record of planning prompts
+- ARCHITECTURE.md contains current information on behavior, when making changes always make sure it is updated appropriately
+- README.md is primarily to help get the user up and running and to explain what the repo is for
+
 ## Test patterns
 
 Tests mock the OpenAI API. Use the existing helpers in `tests/test_agent.py`:

@@ -2,7 +2,7 @@
 
 AI-powered CLI so easy a manager could do it.  
 
-Demonstrates an REPL based AI agent for querying Nokia SR Linux network telemetry using natural language as the primary interface.
+Demonstrates a REPL based AI agent for querying Nokia SR Linux network telemetry using natural language as the primary interface.
 
 ## Why this repo exists
 
@@ -37,7 +37,7 @@ Once you understand the loop, frameworks make a lot more sense.
 
 ### It doesn't always get the correct answers
 
-Note that it does still get things wrong, as an example the tool often has difficult translating the IP addreses used to peer in the overlay into host names, but does well with turning the IP addresses provided in the topology into hostnames.  this largely boils down to a lack of info in the context or lack of tools.
+Note that it does still get things wrong, as an example the tool often has difficulty translating the IP addresses used to peer in the overlay into host names, but does well with turning the IP addresses provided in the topology into hostnames.  This largely boils down to a lack of info in the context or lack of tools.
 
 The overlay peer IPs (10.0.2.1, 10.0.2.2) are loopback addresses that don't appear anywhere in the system prompt's topology section, which only lists management IPs (172.80.80.x) and interface interconnections. The model has no mapping from loopback IP to device name, and no tool to discover one (no IPAM, no DNS, no reverse lookup). It could theoretically brute-force it by querying /system/name on all five devices and cross-referencing router IDs, but that's a lot to expect without explicit guidance.
 
@@ -68,24 +68,27 @@ The agent shows its reasoning (the `>>>` lines) and tool calls in real time befo
 
 ## Prerequisites
 
-- a Linux enviroment, it can be made to work on OSX or WSL but the user is on thier own in that regard.
+- A Linux environment. It can be made to work on macOS or WSL but the user is on their own in that regard.
 - Python 3.11+
-- [uv](https://docs.astral.sh/uv/getting-started/installation/) package manager
-- [containerlab](https://containerlab.dev/install/) for running the lab topology
-- [gnmic](https://gnmic.openconfig.net/install/) CLI installed and on PATH
+- [uv](https://docs.astral.sh/uv/getting-started/installation/), [containerlab](https://containerlab.dev/install/) (includes Docker), and [gnmic](https://gnmic.openconfig.net/install/)
 - OpenAI API key
+
+`make install-deps` will install uv, containerlab (including Docker), and gnmic for you. If you already have them, skip straight to Installation.
 
 ## Installation
 
 ```bash
 git clone https://github.com/hyposcaler/srl-explorer.git
 cd srl-explorer
-make setup
-make lab-up
-make run
+make install-deps             # install uv, containerlab + Docker, gnmic (skip if already installed)
+cp .env.example .env          # add your OpenAI API key
+make setup                    # clone YANG models + lab, install Python deps
+make lab-up                   # deploy the containerlab topology
+make lab-traffic              # start traffic generation between nodes
+make run                      # launch the REPL
 ```
 
-`make setup` clones the SR Linux YANG models and the srl-telemetry-lab (if not already present) and installs Python dependencies. `make lab-up` deploys the containerlab topology. `make run` starts the REPL.
+`make install-deps` installs uv, containerlab (including Docker), and gnmic. `make setup` checks that those tools are present, clones the SR Linux YANG models and the srl-telemetry-lab (if not already present), and installs Python dependencies. `make lab-up` deploys the containerlab topology. `make lab-traffic` starts traffic so Prometheus has data to query. `make run` starts the REPL.
 
 The YANG models version defaults to `v24.10.1` — override with `make setup YANG_MODELS_TAG=<version>`.
 
@@ -93,7 +96,7 @@ The YANG models version defaults to `v24.10.1` — override with `make setup YAN
 
 ## Configuration
 
-Copy `.env.example` to `.env` and fill in your values:
+Copy `.env.example` to `.env` and fill in your values (the installation steps above already include this):
 
 ```bash
 cp .env.example .env
@@ -116,7 +119,7 @@ cp .env.example .env
 Start the REPL:
 
 ```bash
-uv run srl-explorer
+make run
 ```
 
 ### Slash commands
@@ -172,7 +175,8 @@ Run `make` to see all available targets:
 
 | Target | Description |
 |---|---|
-| `make setup` | Install deps + clone YANG models + clone lab |
+| `make install-deps` | Install uv, containerlab (+ Docker), and gnmic |
+| `make setup` | Clone YANG models + lab, install Python deps |
 | `make run` | Run srl-explorer locally |
 | `make lab-up` | Start the telemetry lab (requires containerlab) |
 | `make lab-down` | Stop the telemetry lab |

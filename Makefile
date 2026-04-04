@@ -8,6 +8,29 @@ TELEMETRY_LAB_DIR  ?= srl-telemetry-lab
 
 # --- Development ---
 
+.PHONY: install-deps
+install-deps:     ## Install uv, containerlab (+ Docker), and gnmic
+	@if ! command -v uv >/dev/null 2>&1; then \
+		echo "Installing uv..."; \
+		curl -LsSf https://astral.sh/uv/install.sh | sh; \
+	else \
+		echo "uv already installed"; \
+	fi
+	@if ! command -v containerlab >/dev/null 2>&1; then \
+		echo "Installing containerlab (includes Docker)..."; \
+		bash -c "$$(curl -sL https://get.containerlab.dev)"; \
+	else \
+		echo "containerlab already installed"; \
+	fi
+	@if ! command -v gnmic >/dev/null 2>&1; then \
+		echo "Installing gnmic..."; \
+		bash -c "$$(curl -sL https://get-gnmic.openconfig.net)"; \
+	else \
+		echo "gnmic already installed"; \
+	fi
+	@echo ""
+	@echo "All dependencies installed. Run 'make setup' next."
+
 .PHONY: check-prereqs
 check-prereqs:    ## Check that required tools are installed
 	@missing=0; \
