@@ -4,6 +4,8 @@ from openai.types.chat import ChatCompletionToolParam
 
 from srl_explorer.config import TOPOLOGY
 
+# The system prompt is intentionally large — it's the model's complete operational
+# playbook for the fixed lab topology (devices, paths, metrics, reasoning rules).
 SYSTEM_PROMPT = """\
 You are a network telemetry assistant for a Nokia SR Linux data center fabric.
 
@@ -114,6 +116,8 @@ Before calling any tools, reason through your approach. Consider what the user i
 - Do NOT construct Prometheus range query start/end timestamps without first calling get_current_time
 """
 
+# OpenAI function-calling schemas — these define what tools the LLM can invoke
+# and what parameters each accepts. The model sees these on every API call.
 TOOLS: list[ChatCompletionToolParam] = [
     {
         "type": "function",

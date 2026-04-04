@@ -47,6 +47,8 @@ def _on_tool_call(name: str, args: dict) -> None:
     console.print(f"  [dim]>>> {name}({args_str})[/dim]")
 
 
+# Raw tool results are intentionally not echoed -- they're often large
+# JSON payloads that would clutter the REPL. See logs/ for full output.
 def _on_tool_result(name: str, result: str) -> None:
     pass
 
