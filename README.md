@@ -4,6 +4,42 @@ AI-powered CLI so easy a manager could do it.
 
 Demonstrates an REPL based AI agent for querying Nokia SR Linux network telemetry using natural language as the primary interface.
 
+## Why this repo exists
+
+This is a teaching repo. It exists to show engineers how AI agents work by letting them read the code, run it, and modify it in a space they are already familiar with: networking.
+
+The target audience is engineers who are curious about AI, or maybe getting pushed toward “do something with AI.” If that is you, or someone on your team, this is meant to be the thing you clone and step through before reaching for a framework.
+
+There are many aspects to LLMs and the tooling built around them. One of the most visible is what people generally call prompt engineering. I dislike the term. A lot of it feels less like science and more like prompt art. One experiment worth trying is to change the system prompt in `prompts.py`: tear it apart, put bogus information in it, reduce it to one line, and see how the behavior changes. That alone teaches a lot.
+
+The overall pattern used by this code is what is typically called an agent loop. More broadly, some variation of that loop sits at the heart of many modern AI assistant tools: maintain state, let the model choose actions, execute them in host code, feed the results back, and repeat. This repo exists to make that loop visible and understandable rather than hiding it behind a framework.
+
+What the agent loop actually is
+
+At this level, the pattern comes down to a few key ideas:
+
+- Conversation transcript as state; the model sees the full history of messages (system, user, assistant, tool) on every call. That is how it maintains context across turns. 
+- Prompt + tool schema as the model contract; the system prompt tells the model what it knows and how to think, and the tool definitions tell it what it can do. Together they form the model’s operational playbook. 
+- The tool-call / tool-result loop; the model returns structured tool calls, the agent executes them, feeds results back as tool-role messages, and the model decides whether to call more tools or produce a final answer. 
+- Everything else is engineering discipline; reasoning extraction, structured logging, result truncation, and iteration limits. Important, but secondary to the loop itself.
+
+The distilled agent loop in this repo is small. The rest of the codebase is the engineering around it. Both are worth understanding.
+
+This codebase intentionally avoids using LangChain. Frameworks are good at collapsing ceremony. That is useful after someone understands the ceremony. In networking terms, LangChain-first is a bit like teaching EVPN only through vendor CLI config. People can deploy it, but they do not know what control-plane objects are moving underneath. When something breaks or behaves unexpectedly, they do not have the mental model to debug it.
+
+The only thing between your code and the model is the OpenAI SDK. No framework, no agent library. The loop, the tool dispatch, and the history management are all code you can read and modify. The tool implementations also look like normal network automation code: call `gnmic`, query Prometheus, search YANG, return structured data. That is a deliberate bridge from automation Python into agent-loop Python. 
+
+Once you understand the loop, frameworks make a lot more sense.
+
+Intentional simplifications
+
+This repo makes choices that favor learning over production readiness:
+
+- Hardcoded topology and credentials. The lab topology and device credentials are hardcoded in `config.py` and referenced in the system prompt. This keeps the code simple and avoids configuration-management ceremony that would distract from the agent pattern. Do not do this in production. 
+- Hardcoded system prompt. The system prompt is a large static string with the full lab topology baked in. This is intentional. It serves as the model’s complete operational playbook for a fixed lab environment. In a production system you would template or generate parts of it.
+
+This lab also leans heavily on `srl-telemetry-lab` from `srl-labs`, another excellent tool for learning about telemetry.
+
 ## What it does
 
 srl-explorer is a Python CLI agent with an interactive REPL. You ask questions about your network in plain English, and the agent reasons about which tools to use, executes them, and returns a synthesized answer. It uses OpenAI function calling with three tools:
